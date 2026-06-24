@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<section class="bg-white py-10 border-b-2 border-[#111111] sticky top-[68px] z-30">
+    <div class="max-w-6xl mx-auto px-4">
+        <h1 class="text-3xl font-black mb-6">{% trans "Events" %}</h1>
+        <form method="get" class="grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+            {{ filter_form.city }}
+            {{ filter_form.date_from }}
+            {{ filter_form.date_to }}
+            {{ filter_form.event_type }}
+            {{ filter_form.skill_level }}
+            <button type="submit" class="btn-primary col-span-2 md:col-span-1">{% trans "Filter" %}</button>
+        </form>
+    </div>
+</section>
+
+<section class="py-12">
+    <div class="max-w-6xl mx-auto px-4">
+        {% if events %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for event in events %}
+            {% include "partials/event_card.html" with event=event %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16 card p-8 max-w-lg mx-auto">
+            <p class="text-xl font-bold mb-2">{% trans "No events match your filters" %}</p>
+            <p class="opacity-70 mb-4">{% trans "Try broadening your search or suggest a new city!" %}</p>
+            <a href="{% url 'polls_list' %}" class="btn-primary">{% trans "Suggest a City" %}</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% for event in events %}
+{% if event.is_workshop and not event.is_full %}
+<div id="register-modal-{{ event.pk }}" class="modal-overlay">
+    <div class="modal-content">
+        <h2 class="text-2xl font-black mb-1">{% trans "Register" %}</h2>
+        <p class="text-sm opacity-70 mb-4">{{ event.title }} — {{ event.date|date:"M j, Y" }}</p>
+        <form method="post" action="{% url 'event_register' event.pk %}">
+            {% csrf_token %}
+            <div class="space-y-3 mb-4">
+                <input type="text" name="name" class="form-input" placeholder="{% trans 'Your name' %}" required>
+                <input type="email" name="email" class="form-input" placeholder="{% trans 'your@email.com' %}" required>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 btn-primary">{% trans "Confirm" %}</button>
+                <button type="button" data-modal-close class="px-4 py-3 font-bold opacity-60 hover:opacity-100">{% trans "Cancel" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% elif event.is_jam %}
+<div id="notify-modal-{{ event.pk }}" class="modal-overlay">
+    <div class="modal-content">
+        <h2 class="text-2xl font-black mb-1">{% trans "Get updates" %}</h2>
+        <p class="text-sm opacity-70 mb-4">{{ event.title }} — {{ event.city }}</p>
+        <p class="text-sm mb-4">{% trans "Just show up! Max ~90 people. Respect space & each other." %}</p>
+        <form method="post" action="{% url 'jam_notify' event.pk %}">
+            {% csrf_token %}
+            <div class="space-y-3 mb-4">
+                <input type="email" name="email" class="form-input" placeholder="{% trans 'your@email.com' %}" required>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 btn-primary">{% trans "Notify me" %}</button>
+                <button type="button" data-modal-close class="px-4 py-3 font-bold opacity-60 hover:opacity-100">{% trans "Cancel" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}

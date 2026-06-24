@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<section class="bg-white py-12 border-b-2 border-[#111111]">
+    <div class="max-w-6xl mx-auto px-4">
+        <h1 class="text-4xl font-black mb-2">{% trans "Crowd-powered improv map of Poland" %}</h1>
+        <p class="text-lg opacity-70">{% trans "Vote for cities you want. Propose new ones. 100 votes = we make it happen." %}</p>
+    </div>
+</section>
+
+<section class="py-12">
+    <div class="max-w-6xl mx-auto px-4 grid lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1">
+            <div class="card p-6 sticky top-28">
+                <h2 class="text-xl font-black mb-4">{% trans "Propose your city" %}</h2>
+                <form method="post" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="propose">
+                    {{ propose_form.proposed_by_email }}
+                    {{ propose_form.city }}
+                    {{ propose_form.event_type }}
+                    {{ propose_form.description }}
+                    <button type="submit" class="w-full btn-primary">{% trans "Submit proposal" %}</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <h2 class="text-2xl font-black">{% trans "Active polls" %}</h2>
+            {% if active_polls %}
+            <div class="grid md:grid-cols-2 gap-6">
+                {% for poll in active_polls %}
+                {% include "partials/poll_card.html" with poll=poll %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card p-8 text-center">
+                <p class="font-bold mb-2">{% trans "No active polls yet" %}</p>
+                <p class="text-sm opacity-70">{% trans "Be the first to propose your city!" %}</p>
+            </div>
+            {% endif %}
+
+            {% if closed_polls %}
+            <div class="pt-8">
+                <button id="closed-polls-toggle"
+                        data-show-text="{% trans 'Show past attempts' %}"
+                        data-hide-text="{% trans 'Hide past attempts' %}"
+                        class="font-bold underline opacity-70 hover:opacity-100">
+                    {% trans "Show past attempts" %}
+                </button>
+                <div id="closed-polls-section" class="hidden mt-4 space-y-4">
+                    {% for poll in closed_polls %}
+                    <div class="card p-4 opacity-70">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold">{{ poll.city }} — {{ poll.get_event_type_display }}</span>
+                            {% if poll.succeeded %}
+                            <span class="text-xs font-bold px-2 py-1 rounded-full badge-jam">{% trans "Succeeded!" %}</span>
+                            {% else %}
+                            <span class="text-xs font-bold px-2 py-1 rounded-full bg-gray-300">{% trans "Closed" %} ({{ poll.vote_count }} {% trans "votes" %})</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% for poll in active_polls %}
+<div id="vote-modal-{{ poll.pk }}" class="modal-overlay">
+    <div class="modal-content">
+        <h2 class="text-2xl font-black mb-1">{% trans "Vote for" %} {{ poll.city }}</h2>
+        <p class="text-sm opacity-70 mb-4">{{ poll.vote_count }}/{{ poll.threshold }} {% trans "votes so far" %}</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="vote">
+            <input type="hidden" name="poll_id" value="{{ poll.pk }}">
+            <div class="mb-4">
+                <input type="email" name="email" class="form-input" placeholder="{% trans 'your@email.com' %}" required>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 btn-primary">{% trans "Cast my vote" %}</button>
+                <button type="button" data-modal-close class="px-4 py-3 font-bold opacity-60 hover:opacity-100">{% trans "Cancel" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

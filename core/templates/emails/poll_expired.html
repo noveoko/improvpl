@@ -1,0 +1,8 @@
+{% extends "emails/base_email.html" %}
+
+{% block email_content %}
+<h2>Poll closed for {{ poll.city }}</h2>
+<p>Unfortunately, the poll for <strong>{{ poll.city }}</strong> didn't reach {{ poll.threshold }} votes before the deadline.</p>
+<p>Final count: <strong>{{ poll.vote_count }}/{{ poll.threshold }}</strong> votes.</p>
+<p>Don't give up! You can propose again or vote for other active cities on Improv.pl.</p>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "emails/base_email.html" %}
+
+{% block email_content %}
+<h2>Vote recorded! 🗳️</h2>
+<p>Thanks for voting for <strong>{{ vote.poll.city }}</strong>!</p>
+<p>Current progress: <strong>{{ vote.poll.vote_count }}/{{ vote.poll.threshold }}</strong> votes.</p>
+<p>Share with friends to help reach 100 votes — when we hit the threshold, we'll start planning an event there!</p>
+{% endblock %}

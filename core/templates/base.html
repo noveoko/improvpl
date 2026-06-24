@@ -1,0 +1,80 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Improv.pl{% endblock %} — {% trans "English improv in Poland" %}</title>
+    <meta name="description" content="{% trans 'English-speaking improv workshops and jams across Poland. Browse events, register in 30 seconds, or vote to bring improv to your city.' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        improv: { yellow: '#FFEB3B', black: '#111111' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-[#FFEB3B] text-[#111111] min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="{% url 'home' %}" class="text-2xl font-black tracking-tight hover:text-[#7C3AED] transition-colors">
+                🎭 Improv.pl
+            </a>
+            <div class="flex items-center gap-6">
+                <a href="{% url 'events_list' %}" class="font-semibold hover:underline">{% trans "Events" %}</a>
+                <a href="{% url 'polls_list' %}" class="font-semibold hover:underline">{% trans "Suggest City" %}</a>
+                <div class="flex gap-2 text-sm font-medium">
+                    <form action="{% url 'set_language' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" name="language" value="en" class="{% if LANGUAGE_CODE == 'en' %}font-bold underline{% else %}opacity-60 hover:opacity-100{% endif %}">EN</button>
+                    </form>
+                    <span class="opacity-40">|</span>
+                    <form action="{% url 'set_language' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" name="language" value="pl" class="{% if LANGUAGE_CODE == 'pl' %}font-bold underline{% else %}opacity-60 hover:opacity-100{% endif %}">PL</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="max-w-6xl mx-auto px-4 pt-4 w-full">
+        {% for message in messages %}
+        <div class="flash-message mb-2 px-4 py-3 rounded-lg flex justify-between items-center
+            {% if message.tags == 'success' %}bg-[#10B981] text-white
+            {% elif message.tags == 'error' %}bg-red-600 text-white
+            {% else %}bg-white text-[#111111] border-2 border-[#111111]{% endif %}">
+            <span>{{ message }}</span>
+            <button data-flash-dismiss class="ml-4 opacity-70 hover:opacity-100 text-xl leading-none">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white mt-12 py-8 border-t-2 border-[#111111]">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="font-bold text-lg mb-2">🎭 Improv.pl</p>
+            <p class="text-sm opacity-70">{% trans "English improv workshops & jams across Poland 🇵🇱" %}</p>
+            <p class="text-xs mt-4 opacity-50">{% trans "Get off your phone. Get on the stage." %}</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

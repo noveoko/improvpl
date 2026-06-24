@@ -1,0 +1,9 @@
+{% extends "emails/base_email.html" %}
+
+{% block email_content %}
+<h2>Your proposal is live! 🎭</h2>
+<p>Thanks for proposing <strong>{{ poll.city }}</strong> for a {{ poll.get_event_type_display|lower }}!</p>
+<p>Your poll is now open for votes. Share it with your network to gather support.</p>
+<p><strong>Goal:</strong> {{ poll.threshold }} votes within {{ poll.days_remaining }} days.</p>
+<p>{{ poll.description|truncatewords:30 }}</p>
+{% endblock %}

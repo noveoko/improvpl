@@ -1,0 +1,45 @@
+{% load i18n %}
+<article class="card p-5 flex flex-col h-full">
+    <div class="flex items-start justify-between gap-2 mb-3">
+        <span class="text-sm font-bold bg-[#111111] text-white px-3 py-1 rounded-full">
+            {{ event.date|date:"M j" }}
+        </span>
+        <span class="text-xs font-bold px-3 py-1 rounded-full {% if event.is_workshop %}badge-workshop{% else %}badge-jam{% endif %}">
+            {{ event.get_event_type_display }}
+        </span>
+    </div>
+
+    <h3 class="text-xl font-bold mb-1">{{ event.title }}</h3>
+    <p class="text-sm opacity-70 mb-2">{{ event.city }}{% if event.venue %} • {{ event.venue }}{% endif %}</p>
+    <p class="text-xs font-medium mb-3">{{ event.get_skill_level_display }}</p>
+
+    <p class="text-sm flex-1 line-clamp-2 mb-4">{{ event.description|truncatewords:25 }}</p>
+
+    {% if event.instructor %}
+    <p class="text-xs opacity-60 mb-3">{% trans "Led by" %} {{ event.instructor }}</p>
+    {% endif %}
+
+    <div class="mt-auto">
+        {% if event.is_workshop %}
+            {% if event.is_full %}
+            <span class="inline-block w-full text-center px-4 py-2 bg-gray-200 text-gray-600 font-bold rounded-lg">
+                {% trans "Full" %}
+            </span>
+            {% else %}
+            <p class="text-xs mb-2 opacity-60">{{ event.spots_remaining }} {% trans "spots left" %}</p>
+            <button type="button"
+                    data-modal-open="register-modal-{{ event.pk }}"
+                    class="w-full btn-primary text-center">
+                {% trans "Register" %}
+            </button>
+            {% endif %}
+        {% else %}
+        <p class="text-sm font-medium mb-2">{% trans "Just show up! Drop-in jam." %}</p>
+        <button type="button"
+                data-modal-open="notify-modal-{{ event.pk }}"
+                class="w-full text-sm font-semibold underline opacity-70 hover:opacity-100">
+            {% trans "Get updates" %}
+        </button>
+        {% endif %}
+    </div>
+</article>

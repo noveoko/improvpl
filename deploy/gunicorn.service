@@ -1,0 +1,18 @@
+[Unit]
+Description=gunicorn daemon for Improv.pl
+After=network.target
+
+[Service]
+User=improvuser
+Group=www-data
+WorkingDirectory=/home/improvuser/improvpl
+Environment="PATH=/home/improvuser/improvpl/venv/bin"
+EnvironmentFile=/home/improvuser/improvpl/.env
+ExecStart=/home/improvuser/improvpl/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/home/improvuser/improvpl/improvpl.sock \
+          improvpl.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

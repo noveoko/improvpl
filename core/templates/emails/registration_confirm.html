@@ -1,0 +1,19 @@
+{% extends "emails/base_email.html" %}
+
+{% block email_content %}
+<h2>You're registered! 🎉</h2>
+<p>Hi {{ registration.name }},</p>
+<p>You're confirmed for <strong>{{ registration.event.title }}</strong> in {{ registration.event.city }}.</p>
+<ul>
+    <li><strong>Date:</strong> {{ registration.event.date|date:"l, F j, Y" }}</li>
+    {% if registration.event.start_time %}
+    <li><strong>Time:</strong> {{ registration.event.start_time|time:"g:i A" }}</li>
+    {% endif %}
+    {% if registration.event.venue %}
+    <li><strong>Venue:</strong> {{ registration.event.venue }}</li>
+    {% endif %}
+    <li><strong>Level:</strong> {{ registration.event.get_skill_level_display }}</li>
+</ul>
+<p>{{ registration.event.description|truncatewords:40 }}</p>
+<p>Come as you are. See you there! 😂</p>
+{% endblock %}

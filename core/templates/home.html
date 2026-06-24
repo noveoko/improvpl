@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<section class="bg-white py-16 md:py-24">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <h1 class="text-5xl md:text-6xl font-black mb-4 leading-tight">
+            {% trans "Improv on demand in Poland" %}
+        </h1>
+        <p class="text-xl md:text-2xl font-medium mb-2 opacity-80">
+            {% trans "English-speaking workshops & jams" %}
+        </p>
+        <p class="text-lg mb-8 opacity-60">
+            {% trans "Like Uber... but for belly laughs 😂" %}
+        </p>
+        <div class="flex flex-wrap gap-4 justify-center">
+            <a href="{% url 'events_list' %}" class="btn-secondary">{% trans "Browse Events" %}</a>
+            <a href="{% url 'polls_list' %}" class="btn-primary">{% trans "Suggest Your City" %}</a>
+        </div>
+    </div>
+</section>
+
+<section class="bg-[#FFEB3B] py-4 border-y-2 border-[#111111]">
+    <div class="max-w-6xl mx-auto px-4 text-center text-sm font-semibold">
+        {% trans "All English Speakers Welcome (regardless of skill level) • Beginner-friendly • 1 event/week target" %}
+    </div>
+</section>
+
+<section class="bg-white py-16">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-black text-center mb-10">{% trans "How it works" %}</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="card p-6 text-center">
+                <div class="text-4xl mb-3">1</div>
+                <h3 class="font-bold text-lg mb-2">{% trans "Browse & pick your vibe" %}</h3>
+                <p class="text-sm opacity-70">{% trans "Workshops for learning, jams for pure fun. Filter by city and skill level." %}</p>
+            </div>
+            <div class="card p-6 text-center">
+                <div class="text-4xl mb-3">2</div>
+                <h3 class="font-bold text-lg mb-2">{% trans "30-sec email register" %}</h3>
+                <p class="text-sm opacity-70">{% trans "Name + email. No account needed. Confirmation in your inbox." %}</p>
+            </div>
+            <div class="card p-6 text-center">
+                <div class="text-4xl mb-3">3</div>
+                <h3 class="font-bold text-lg mb-2">{% trans "Show up & shine" %}</h3>
+                <p class="text-sm opacity-70">{% trans "Come as you are. Laugh with strangers who become friends." %}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if upcoming_events %}
+<section class="py-16">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black">{% trans "Upcoming Events" %}</h2>
+            <a href="{% url 'events_list' %}" class="font-bold hover:underline">{% trans "See all →" %}</a>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for event in upcoming_events %}
+            {% include "partials/event_card.html" with event=event %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% for event in upcoming_events %}
+{% if event.is_workshop and not event.is_full %}
+<div id="register-modal-{{ event.pk }}" class="modal-overlay">
+    <div class="modal-content">
+        <h2 class="text-2xl font-black mb-1">{% trans "Register" %}</h2>
+        <p class="text-sm opacity-70 mb-4">{{ event.title }} — {{ event.date|date:"M j, Y" }}</p>
+        <form method="post" action="{% url 'event_register' event.pk %}">
+            {% csrf_token %}
+            <div class="space-y-3 mb-4">
+                <input type="text" name="name" class="form-input" placeholder="{% trans 'Your name' %}" required>
+                <input type="email" name="email" class="form-input" placeholder="{% trans 'your@email.com' %}" required>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 btn-primary">{% trans "Confirm" %}</button>
+                <button type="button" data-modal-close class="px-4 py-3 font-bold opacity-60 hover:opacity-100">{% trans "Cancel" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endif %}
+
+<section class="bg-[#FFEB3B] py-16 border-y-2 border-[#111111]">
+    <div class="max-w-xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-black mb-2">{% trans "Never miss a laugh in your city" %}</h2>
+        <p class="mb-6 opacity-70">{% trans "Get notified about new events and city launches." %}</p>
+        <form method="post" class="space-y-3">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="subscribe">
+            {{ subscriber_form.email }}
+            {{ subscriber_form.city_interest }}
+            <button type="submit" class="w-full btn-primary">{% trans "Join the list" %}</button>
+        </form>
+    </div>
+</section>
+
+{% if active_polls %}
+<section class="bg-white py-16">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black">{% trans "Help bring improv to YOUR city!" %}</h2>
+            <a href="{% url 'polls_list' %}" class="font-bold hover:underline">{% trans "See all polls →" %}</a>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {% for poll in active_polls %}
+            {% include "partials/poll_card.html" with poll=poll %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% for poll in active_polls %}
+<div id="vote-modal-{{ poll.pk }}" class="modal-overlay">
+    <div class="modal-content">
+        <h2 class="text-2xl font-black mb-1">{% trans "Vote for" %} {{ poll.city }}</h2>
+        <p class="text-sm opacity-70 mb-4">{{ poll.vote_count }}/{{ poll.threshold }} {% trans "votes so far" %}</p>
+        <form method="post" action="{% url 'polls_list' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="vote">
+            <input type="hidden" name="poll_id" value="{{ poll.pk }}">
+            <div class="mb-4">
+                <input type="email" name="email" class="form-input" placeholder="{% trans 'your@email.com' %}" required>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 btn-primary">{% trans "Cast my vote" %}</button>
+                <button type="button" data-modal-close class="px-4 py-3 font-bold opacity-60 hover:opacity-100">{% trans "Cancel" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+{% endif %}
+
+{% endblock %}

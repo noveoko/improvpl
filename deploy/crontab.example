@@ -1,0 +1,2 @@
+# Run daily at 09:00 to close expired polls and finalize successful ones
+0 9 * * * /home/improvuser/improvpl/venv/bin/python /home/improvuser/improvpl/manage.py close_polls >> /var/log/improvpl_cron.log 2>&1

@@ -1,0 +1,119 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Improv.pl\n"
+"Language: pl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "English improv in Poland"
+msgstr "Improv po angielsku w Polsce"
+
+msgid "Events"
+msgstr "Wydarzenia"
+
+msgid "Suggest City"
+msgstr "Zaproponuj miasto"
+
+msgid "Improv on demand in Poland"
+msgstr "Improv na żądanie w Polsce"
+
+msgid "English-speaking workshops & jams"
+msgstr "Warsztaty i jamy po angielsku"
+
+msgid "Like Uber... but for belly laughs 😂"
+msgstr "Jak Uber... tylko że od brzucha śmiech 😂"
+
+msgid "Browse Events"
+msgstr "Przeglądaj wydarzenia"
+
+msgid "Suggest Your City"
+msgstr "Zaproponuj swoje miasto"
+
+msgid "All English Speakers Welcome (regardless of skill level) • Beginner-friendly • 1 event/week target"
+msgstr "Wszyscy anglojęzyczni mile widziani (niezależnie od poziomu) • Przyjazne dla początkujących • Cel: 1 wydarzenie/tydzień"
+
+msgid "How it works"
+msgstr "Jak to działa"
+
+msgid "Browse & pick your vibe"
+msgstr "Przeglądaj i wybierz swój klimat"
+
+msgid "30-sec email register"
+msgstr "Rejestracja e-mailem w 30 sekund"
+
+msgid "Show up & shine"
+msgstr "Przyjdź i błyszcz"
+
+msgid "Upcoming Events"
+msgstr "Nadchodzące wydarzenia"
+
+msgid "See all →"
+msgstr "Zobacz wszystkie →"
+
+msgid "Never miss a laugh in your city"
+msgstr "Nie przegap śmiechu w swoim mieście"
+
+msgid "Join the list"
+msgstr "Dołącz do listy"
+
+msgid "Help bring improv to YOUR city!"
+msgstr "Pomóż sprowadzić improv do TWOJEGO miasta!"
+
+msgid "See all polls →"
+msgstr "Zobacz wszystkie głosowania →"
+
+msgid "Register"
+msgstr "Zarejestruj się"
+
+msgid "Register now"
+msgstr "Zarejestruj się teraz"
+
+msgid "Just show up! Drop-in jam."
+msgstr "Po prostu przyjdź! Jam bez rejestracji."
+
+msgid "Get updates"
+msgstr "Otrzymuj aktualizacje"
+
+msgid "Filter"
+msgstr "Filtruj"
+
+msgid "Vote for this!"
+msgstr "Głosuj na to!"
+
+msgid "votes"
+msgstr "głosów"
+
+msgid "days left"
+msgstr "dni pozostało"
+
+msgid "Crowd-powered improv map of Poland"
+msgstr "Mapa improv w Polsce tworzona przez społeczność"
+
+msgid "Propose your city"
+msgstr "Zaproponuj swoje miasto"
+
+msgid "Submit proposal"
+msgstr "Wyślij propozycję"
+
+msgid "Active polls"
+msgstr "Aktywne głosowania"
+
+msgid "Cast my vote"
+msgstr "Oddaj głos"
+
+msgid "Confirm"
+msgstr "Potwierdź"
+
+msgid "Cancel"
+msgstr "Anuluj"
+
+msgid "Full"
+msgstr "Brak miejsc"
+
+msgid "spots left"
+msgstr "miejsc pozostało"
+
+msgid "Led by"
+msgstr "Prowadzi"
+
+msgid "Get off your phone. Get on the stage."
+msgstr "Odłóż telefon. Wejdź na scenę."

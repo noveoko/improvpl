@@ -1,0 +1,8 @@
+{% extends "emails/base_email.html" %}
+
+{% block email_content %}
+<h2>Improv is coming to {{ poll.city }}! 🎉🔥</h2>
+<p>Great news — <strong>{{ poll.city }}</strong> reached {{ poll.threshold }} votes!</p>
+<p>We're planning a {{ poll.get_event_type_display|lower }} in {{ poll.city }}. Stay tuned for event details soon.</p>
+<p>Thank you for helping build the English improv scene in Poland!</p>
+{% endblock %}
