@@ -177,6 +177,29 @@ As `improvuser`, `crontab -e` (see `deploy/crontab.example`):
 0 9 * * * /home/improvuser/improvpl/venv/bin/python /home/improvuser/improvpl/manage.py close_polls >> /var/log/improvpl_cron.log 2>&1
 ```
 
+### Finish production setup (one-time)
+
+On the server as `improvuser`, after `git pull`:
+
+```bash
+cd ~/improvpl
+chmod +x deploy/*.sh
+bash deploy/finish-production-setup.sh          # cron + demo data
+bash deploy/configure-brevo.sh <login> <key>    # real emails via Brevo
+```
+
+Cloudflare Origin Certificate (then **SSL/TLS → Full (strict)** in Cloudflare):
+
+```bash
+sudo mkdir -p /etc/ssl/cloudflare
+sudo nano /etc/ssl/cloudflare/improv.pl.pem     # paste Cloudflare origin cert
+sudo nano /etc/ssl/cloudflare/improv.pl.key     # paste private key
+sudo chmod 600 /etc/ssl/cloudflare/improv.pl.key
+sudo bash /home/improvuser/improvpl/deploy/install-cloudflare-origin-cert.sh
+```
+
+GitHub Actions push-to-deploy: see `deploy/GITHUB_ACTIONS.md`.
+
 ### Useful commands
 
 ```bash
