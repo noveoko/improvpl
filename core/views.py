@@ -101,11 +101,16 @@ def event_register(request, event_id):
         messages.info(request, _('You\'re already registered for this event.'))
         return redirect('events_list')
 
-    send_registration_confirm(registration)
-    messages.success(
-        request,
-        _('You\'re in! Check your email for confirmation.'),
-    )
+    if send_registration_confirm(registration):
+        messages.success(
+            request,
+            _('You\'re in! Check your email for confirmation.'),
+        )
+    else:
+        messages.warning(
+            request,
+            _('You\'re registered, but we couldn\'t send the confirmation email. We\'ll see you there!'),
+        )
     return redirect('events_list')
 
 
@@ -139,11 +144,16 @@ def polls_list(request):
             propose_form = PollProposeForm(request.POST)
             if propose_form.is_valid():
                 poll = propose_form.save()
-                send_poll_propose_confirm(poll)
-                messages.success(
-                    request,
-                    _('Your proposal is live! Share it to gather votes.'),
-                )
+                if send_poll_propose_confirm(poll):
+                    messages.success(
+                        request,
+                        _('Your proposal is live! Share it to gather votes.'),
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        _('Your proposal is live, but we couldn\'t send a confirmation email.'),
+                    )
                 return redirect('polls_list')
         elif request.POST.get('form_type') == 'vote':
             poll_id = request.POST.get('poll_id')
@@ -156,9 +166,11 @@ def polls_list(request):
                     vote.save()
                     poll.vote_count += 1
                     poll.save(update_fields=['vote_count'])
-                    send_poll_vote_confirm(vote)
                     check_poll_after_vote(poll)
-                    messages.success(request, _('Vote recorded! Thanks for supporting %(city)s.') % {'city': poll.city})
+                    if send_poll_vote_confirm(vote):
+                        messages.success(request, _('Vote recorded! Thanks for supporting %(city)s.') % {'city': poll.city})
+                    else:
+                        messages.success(request, _('Vote recorded for %(city)s! (Confirmation email could not be sent.)') % {'city': poll.city})
                 except IntegrityError:
                     messages.info(request, _('You\'ve already voted for this city.'))
                 return redirect('polls_list')
