@@ -3,7 +3,8 @@ set -euo pipefail
 
 if [[ $# -lt 2 ]]; then
     echo "Usage: configure-brevo.sh <brevo-smtp-login> <brevo-smtp-key>"
-    echo "Get credentials: Brevo → SMTP & API → SMTP keys"
+    echo "Login: Brevo → SMTP & API → SMTP (the SMTP login email shown there)"
+    echo "Key:   Create SMTP key (starts with xsmtpsib-), NOT an API key (xkeysib-)"
     exit 1
 fi
 
@@ -14,10 +15,11 @@ ENV_FILE="/home/improvuser/improvpl/.env"
 set_env() {
     local key="$1"
     local value="$2"
+    local line="${key}=${value}"
     if grep -q "^${key}=" "$ENV_FILE"; then
-        sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
+        sed -i "s|^${key}=.*|${line}|" "$ENV_FILE"
     else
-        echo "${key}=${value}" >> "$ENV_FILE"
+        echo "${line}" >> "$ENV_FILE"
     fi
 }
 
