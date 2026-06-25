@@ -2,7 +2,7 @@
 
 English-first improv workshops and jams across Poland. Community-driven city polls, frictionless email registration, zero UI clutter.
 
-**Stack:** Django 5.1+ · SQLite (dev) / PostgreSQL (prod) · Tailwind CDN · Whitenoise · Gunicorn · Nginx
+**Stack:** Django 5.1+ · SQLite (dev) / PostgreSQL (prod) · Tailwind CDN · Whitenoise · Gunicorn · Nginx · Cloudflare
 
 ---
 
@@ -84,130 +84,116 @@ improvpl/
 
 ---
 
-## Deployment (Digital Ocean)
+## Production
 
-Target: Ubuntu 24.04 droplet, ~$6/mo (1 GB RAM, 1 vCPU).
+**Live:** https://improv.pl · https://www.improv.pl/admin/
 
-### 1. System prep
-
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install python3-pip python3-venv python3-dev libpq-dev \
-  postgresql postgresql-contrib nginx certbot python3-certbot-nginx -y
+```
+Browser ──HTTPS──► Cloudflare (edge SSL) ──HTTP──► Nginx ──► Gunicorn ──► Django ──► PostgreSQL
+                         ▲
+              Domain registered at SEOHost.pl
+              DNS delegated to Cloudflare
 ```
 
-### 2. App user & code
+| Layer | Details |
+|-------|---------|
+| Server | Digital Ocean droplet, Ubuntu 24.04 |
+| App user | `improvuser` → `/home/improvuser/improvpl` |
+| Repo | `git@github.com:noveoko/improvpl.git` |
+| DNS / SSL | Cloudflare (proxied A records, Universal SSL) |
+| Deploy | Push to `main` → GitHub Actions, or `bash deploy/deploy.sh` on server |
 
-```bash
-sudo useradd -m -s /bin/bash improvuser
-sudo passwd improvuser
-sudo usermod -aG www-data improvuser
-
-su - improvuser
-git clone YOUR_GITHUB_REPO ~/improvpl
-cd ~/improvpl
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 3. PostgreSQL
-
-```bash
-sudo -u postgres psql
-```
-
-```sql
-CREATE DATABASE improvpl;
-CREATE USER improvuser WITH PASSWORD 'your-strong-password';
-GRANT ALL PRIVILEGES ON DATABASE improvpl TO improvuser;
-\q
-```
-
-### 4. Environment
-
-```bash
-nano ~/improvpl/.env
-```
+### Server `.env` (not in git)
 
 ```env
 DEBUG=False
-SECRET_KEY=generate-a-long-random-string-here
-ALLOWED_HOSTS=improv.pl,www.improv.pl,YOUR_DROPLET_IP
-DATABASE_URL=postgres://improvuser:your-strong-password@localhost:5432/improvpl
+SECRET_KEY=<long-random-string>
+ALLOWED_HOSTS=improv.pl,www.improv.pl,<DROPLET_IP>
+CSRF_TRUSTED_ORIGINS=https://improv.pl,https://www.improv.pl
+DATABASE_URL=postgres://improvuser:<password>@localhost:5432/improvpl
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.brevo.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-brevo-login
-EMAIL_HOST_PASSWORD=your-smtp-password
+EMAIL_HOST_USER=<brevo-login>
+EMAIL_HOST_PASSWORD=<brevo-smtp-key>
 DEFAULT_FROM_EMAIL=hello@improv.pl
 ```
 
-### 5. Migrate & static
+### Initial server setup
 
-```bash
-cd ~/improvpl && source venv/bin/activate
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py createsuperuser
-python manage.py compilemessages
+Ubuntu packages, PostgreSQL, Gunicorn, and Nginx configs live in `deploy/`. On PostgreSQL 15+ (Ubuntu 24.04), also run as `postgres`:
+
+```sql
+ALTER DATABASE improvpl OWNER TO improvuser;
+\c improvpl
+GRANT ALL ON SCHEMA public TO improvuser;
+GRANT CREATE ON SCHEMA public TO improvuser;
 ```
 
-### 6. Gunicorn (systemd)
+Allow passwordless Gunicorn restarts for deploys:
 
 ```bash
-sudo cp ~/improvpl/deploy/gunicorn.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl start gunicorn
-sudo systemctl enable gunicorn
-sudo systemctl status gunicorn
+echo 'improvuser ALL=(ALL) NOPASSWD: /bin/systemctl restart gunicorn' | sudo tee /etc/sudoers.d/improvuser-gunicorn
 ```
 
-Ensure the socket is readable by Nginx:
+### Cloudflare
+
+1. Add `improv.pl` to Cloudflare (Free plan).
+2. DNS records (proxied / orange cloud):
+
+| Type | Name | Content |
+|------|------|---------|
+| A | `@` | `<DROPLET_IP>` |
+| A | `www` | `<DROPLET_IP>` |
+
+3. At SEOHost.pl → **Delegacja DNS** → replace SEOHost nameservers with Cloudflare's.
+4. **SSL/TLS → Flexible** while the origin serves HTTP only. Do **not** run Certbot behind the orange cloud proxy (causes redirect loops).
+5. Optional hardening: Cloudflare Origin Certificate on the droplet + **Full (strict)**.
+
+### CI/CD (GitHub Actions)
+
+Repo secrets (`Settings → Secrets → Actions`):
+
+| Secret | Value |
+|--------|-------|
+| `SSH_HOST` | Droplet IP |
+| `SSH_USER` | `improvuser` |
+| `SSH_PRIVATE_KEY` | Private key whose public half is in `~/.ssh/authorized_keys` |
+
+Server needs a GitHub deploy key (`~/.ssh/github_deploy`) with read access to the repo.
+
+Every push to `main` runs `.github/workflows/deploy.yml`. Manual deploy:
 
 ```bash
-sudo chmod 755 /home/improvuser
-sudo chown improvuser:www-data /home/improvuser/improvpl/improvpl.sock
+bash ~/improvpl/deploy/deploy.sh
 ```
 
-### 7. Nginx
+### Cron — close polls daily
 
-```bash
-sudo cp ~/improvpl/deploy/nginx/improvpl.conf /etc/nginx/sites-available/improvpl
-sudo ln -s /etc/nginx/sites-available/improvpl /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
-
-### 8. SSL (Certbot)
-
-Point your domain A record to the droplet IP, then:
-
-```bash
-sudo certbot --nginx -d improv.pl -d www.improv.pl
-```
-
-### 9. Cron — close polls daily
-
-```bash
-crontab -e
-```
-
-Add (see `deploy/crontab.example`):
+As `improvuser`, `crontab -e` (see `deploy/crontab.example`):
 
 ```
 0 9 * * * /home/improvuser/improvpl/venv/bin/python /home/improvuser/improvpl/manage.py close_polls >> /var/log/improvpl_cron.log 2>&1
 ```
 
-### 10. DNS
+### Useful commands
 
-At your registrar (e.g. Namecheap):
+```bash
+# Logs
+sudo journalctl -u gunicorn -n 50
+sudo tail -f /var/log/nginx/error.log
 
-| Type | Host | Value |
-|------|------|-------|
-| A | @ | DROPLET_IP |
-| A | www | DROPLET_IP |
+# Restart after manual changes
+sudo systemctl restart gunicorn
+
+# Reset admin password
+cd ~/improvpl && source venv/bin/activate
+python manage.py changepassword <username>
+
+# Check DNS (should return Cloudflare IPs when proxied)
+nslookup improv.pl 1.1.1.1
+```
 
 ---
 
