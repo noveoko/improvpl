@@ -5,6 +5,9 @@ from .models import Event, Poll, Registration, Subscriber, Vote
 
 
 class SubscriberForm(forms.ModelForm):
+    def validate_unique(self):
+        pass
+
     class Meta:
         model = Subscriber
         fields = ['email', 'city_interest']
@@ -78,6 +81,9 @@ class PollProposeForm(forms.ModelForm):
 
 
 class JamNotifyForm(forms.ModelForm):
+    def validate_unique(self):
+        pass
+
     class Meta:
         model = Subscriber
         fields = ['email']

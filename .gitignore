@@ -4,6 +4,12 @@ __pycache__/
 db.sqlite3
 .env
 staticfiles/
+media/
 *.sock
 deploy/keys/
 .DS_Store
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

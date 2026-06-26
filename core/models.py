@@ -43,6 +43,16 @@ class Event(models.Model):
     skill_level = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, default=ALL_LEVELS)
     capacity = models.PositiveIntegerField(default=20)
     description = models.TextField()
+    headline_image = models.ImageField(
+        upload_to='events/headlines/',
+        blank=True,
+        help_text='Optional promotional banner (recommended 16:9).',
+    )
+    description_image = models.ImageField(
+        upload_to='events/descriptions/',
+        blank=True,
+        help_text='Optional photo shown with the event description.',
+    )
     instructor = models.CharField(max_length=100, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -154,3 +164,27 @@ class Vote(models.Model):
 
     def __str__(self):
         return f'{self.email} — {self.poll.city}'
+
+
+class HomePageContent(models.Model):
+    hero_image = models.ImageField(
+        upload_to='homepage/',
+        blank=True,
+        help_text='Optional full-width image above the homepage headline.',
+    )
+
+    class Meta:
+        verbose_name = 'Home page content'
+        verbose_name_plural = 'Home page content'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return 'Home page content'

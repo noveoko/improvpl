@@ -10,7 +10,74 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  django-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Django unit, integration, and acceptance tests
+        run: python manage.py test core.tests -v 2
+
+  e2e-tests:
+    needs: django-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Prepare database and demo data
+        env:
+          EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+        run: |
+          python manage.py migrate
+          python manage.py seed_demo_data
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Start Django server
+        env:
+          EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+        run: |
+          python manage.py runserver 127.0.0.1:8000 --noreload &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/ > /dev/null; then
+              echo "Server is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server failed to start"
+          exit 1
+
+      - name: Run Playwright smoke tests
+        run: npx playwright test
+
   deploy:
+    needs: [django-tests, e2e-tests]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Event, Poll, Registration, Subscriber, Vote
+from .models import Event, HomePageContent, Poll, Registration, Subscriber, Vote
 
 
 class RegistrationInline(admin.TabularInline):
@@ -21,7 +21,7 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ['title', 'city', 'venue', 'instructor']
     date_hierarchy = 'date'
     inlines = [RegistrationInline]
-    readonly_fields = ['registration_count_display', 'created_at']
+    readonly_fields = ['registration_count_display', 'headline_image_preview', 'description_image_preview', 'created_at']
 
     fieldsets = (
         (None, {
@@ -34,6 +34,12 @@ class EventAdmin(admin.ModelAdmin):
         }),
         ('Details', {
             'fields': ('description', 'instructor', 'capacity', 'registration_count_display'),
+        }),
+        ('Images', {
+            'fields': (
+                'headline_image', 'headline_image_preview',
+                'description_image', 'description_image_preview',
+            ),
         }),
         ('Meta', {
             'fields': ('created_at',),
@@ -61,6 +67,50 @@ class EventAdmin(admin.ModelAdmin):
         if obj.is_jam:
             return 'Drop-in (no registration)'
         return f'{obj.registration_count} / {obj.capacity}'
+
+    @admin.display(description='Headline preview')
+    def headline_image_preview(self, obj):
+        if obj.headline_image:
+            return format_html(
+                '<img src="{}" style="max-height:120px;border-radius:4px;">',
+                obj.headline_image.url,
+            )
+        return '—'
+
+    @admin.display(description='Description preview')
+    def description_image_preview(self, obj):
+        if obj.description_image:
+            return format_html(
+                '<img src="{}" style="max-height:120px;border-radius:4px;">',
+                obj.description_image.url,
+            )
+        return '—'
+
+
+@admin.register(HomePageContent)
+class HomePageContentAdmin(admin.ModelAdmin):
+    readonly_fields = ['hero_image_preview']
+
+    fieldsets = (
+        (None, {
+            'fields': ('hero_image', 'hero_image_preview'),
+        }),
+    )
+
+    def has_add_permission(self, request):
+        return not HomePageContent.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description='Preview')
+    def hero_image_preview(self, obj):
+        if obj.hero_image:
+            return format_html(
+                '<img src="{}" style="max-width:100%;max-height:200px;border-radius:4px;">',
+                obj.hero_image.url,
+            )
+        return '—'
 
 
 @admin.register(Registration)

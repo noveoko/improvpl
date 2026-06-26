@@ -3,6 +3,13 @@
 
 {% block content %}
 
+{% if homepage.hero_image %}
+<section class="w-full">
+    <img src="{{ homepage.hero_image.url }}" alt=""
+         class="w-full max-h-72 md:max-h-96 object-cover">
+</section>
+{% endif %}
+
 <section class="bg-white py-16 md:py-24">
     <div class="max-w-6xl mx-auto px-4 text-center">
         <h1 class="text-5xl md:text-6xl font-black mb-4 leading-tight">

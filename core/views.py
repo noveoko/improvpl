@@ -14,7 +14,7 @@ from .forms import (
     SubscriberForm,
     VoteForm,
 )
-from .models import Event, Poll, Registration, Subscriber, Vote
+from .models import Event, HomePageContent, Poll, Registration, Subscriber, Vote
 from .services import check_poll_after_vote
 
 
@@ -29,14 +29,20 @@ def home(request):
     if request.method == 'POST' and request.POST.get('form_type') == 'subscribe':
         subscriber_form = SubscriberForm(request.POST)
         if subscriber_form.is_valid():
-            try:
-                subscriber_form.save()
+            _subscriber, created = Subscriber.objects.get_or_create(
+                email=subscriber_form.cleaned_data['email'],
+                defaults={
+                    'city_interest': subscriber_form.cleaned_data.get('city_interest', ''),
+                },
+            )
+            if created:
                 messages.success(request, _('You\'re on the list! We\'ll keep you posted.'))
-            except IntegrityError:
+            else:
                 messages.info(request, _('You\'re already subscribed — thanks!'))
             return redirect('home')
 
     return render(request, 'home.html', {
+        'homepage': HomePageContent.load(),
         'upcoming_events': upcoming_events,
         'active_polls': active_polls,
         'subscriber_form': subscriber_form,
@@ -120,13 +126,13 @@ def jam_notify(request, event_id):
     form = JamNotifyForm(request.POST)
 
     if form.is_valid():
-        try:
-            Subscriber.objects.create(
-                email=form.cleaned_data['email'],
-                city_interest=event.city,
-            )
+        _subscriber, created = Subscriber.objects.get_or_create(
+            email=form.cleaned_data['email'],
+            defaults={'city_interest': event.city},
+        )
+        if created:
             messages.success(request, _('We\'ll notify you of any changes.'))
-        except IntegrityError:
+        else:
             messages.info(request, _('You\'re already on our list — we\'ll keep you posted!'))
 
     return redirect('events_list')
