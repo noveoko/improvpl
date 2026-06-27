@@ -15,7 +15,7 @@ if settings.DEBUG:
 else:
     # Fallback when nginx does not serve /media/ (improvuser has no sudo for nginx).
     urlpatterns += [
-        re_path(
+        re_path(  # type: ignore[list-item]
             r"^media/(?P<path>.*)$",
             serve,
             {"document_root": settings.MEDIA_ROOT},
