@@ -152,6 +152,8 @@ Allow passwordless Gunicorn restarts for deploys:
 echo 'improvuser ALL=(ALL) NOPASSWD: /bin/systemctl restart gunicorn' | sudo tee /etc/sudoers.d/improvuser-gunicorn
 ```
 
+`improvuser` cannot edit nginx (root only). To fix nginx, use the **DigitalOcean droplet console** (Access → Launch Droplet Console) as `root`, then run `sudo bash /home/improvuser/improvpl/deploy/install-nginx-media.sh`. Until then, Django serves `/media/` as a fallback.
+
 ### Cloudflare
 
 1. Add `improv.pl` to Cloudflare (Free plan).
