@@ -14,7 +14,7 @@ from .forms import (
     SubscriberForm,
     VoteForm,
 )
-from .models import Event, HomePageContent, Poll, Registration, Subscriber, Vote
+from .models import Event, HomePageContent, Poll, Subscriber
 from .services import check_poll_after_vote
 
 
@@ -26,27 +26,31 @@ def home(request):
     active_polls = Poll.objects.filter(is_active=True, succeeded=False)[:2]
     subscriber_form = SubscriberForm()
 
-    if request.method == 'POST' and request.POST.get('form_type') == 'subscribe':
+    if request.method == "POST" and request.POST.get("form_type") == "subscribe":
         subscriber_form = SubscriberForm(request.POST)
         if subscriber_form.is_valid():
             _subscriber, created = Subscriber.objects.get_or_create(
-                email=subscriber_form.cleaned_data['email'],
+                email=subscriber_form.cleaned_data["email"],
                 defaults={
-                    'city_interest': subscriber_form.cleaned_data.get('city_interest', ''),
+                    "city_interest": subscriber_form.cleaned_data.get("city_interest", ""),
                 },
             )
             if created:
-                messages.success(request, _('You\'re on the list! We\'ll keep you posted.'))
+                messages.success(request, _("You're on the list! We'll keep you posted."))
             else:
-                messages.info(request, _('You\'re already subscribed — thanks!'))
-            return redirect('home')
+                messages.info(request, _("You're already subscribed — thanks!"))
+            return redirect("home")
 
-    return render(request, 'home.html', {
-        'homepage': HomePageContent.load(),
-        'upcoming_events': upcoming_events,
-        'active_polls': active_polls,
-        'subscriber_form': subscriber_form,
-    })
+    return render(
+        request,
+        "home.html",
+        {
+            "homepage": HomePageContent.load(),
+            "upcoming_events": upcoming_events,
+            "active_polls": active_polls,
+            "subscriber_form": subscriber_form,
+        },
+    )
 
 
 def events_list(request):
@@ -54,11 +58,11 @@ def events_list(request):
     filter_form = EventFilterForm(request.GET or None)
 
     if filter_form.is_valid():
-        city = filter_form.cleaned_data.get('city')
-        date_from = filter_form.cleaned_data.get('date_from')
-        date_to = filter_form.cleaned_data.get('date_to')
-        event_type = filter_form.cleaned_data.get('event_type')
-        skill_level = filter_form.cleaned_data.get('skill_level')
+        city = filter_form.cleaned_data.get("city")
+        date_from = filter_form.cleaned_data.get("date_from")
+        date_to = filter_form.cleaned_data.get("date_to")
+        event_type = filter_form.cleaned_data.get("event_type")
+        skill_level = filter_form.cleaned_data.get("skill_level")
 
         if city:
             events = events.filter(city__icontains=city)
@@ -71,15 +75,19 @@ def events_list(request):
         if skill_level:
             events = events.filter(skill_level=skill_level)
 
-    cities = Event.objects.filter(is_active=True).values_list('city', flat=True).distinct()
+    cities = Event.objects.filter(is_active=True).values_list("city", flat=True).distinct()
 
-    return render(request, 'events.html', {
-        'events': events,
-        'filter_form': filter_form,
-        'cities': sorted(set(cities)),
-        'registration_form': RegistrationForm(),
-        'jam_notify_form': JamNotifyForm(),
-    })
+    return render(
+        request,
+        "events.html",
+        {
+            "events": events,
+            "filter_form": filter_form,
+            "cities": sorted(set(cities)),
+            "registration_form": RegistrationForm(),
+            "jam_notify_form": JamNotifyForm(),
+        },
+    )
 
 
 @require_POST
@@ -87,37 +95,39 @@ def event_register(request, event_id):
     event = get_object_or_404(Event, pk=event_id, is_active=True)
 
     if not event.is_workshop:
-        messages.error(request, _('Jams are drop-in — no registration needed!'))
-        return redirect('events_list')
+        messages.error(request, _("Jams are drop-in — no registration needed!"))
+        return redirect("events_list")
 
     if event.is_full:
-        messages.error(request, _('Sorry, this workshop is full.'))
-        return redirect('events_list')
+        messages.error(request, _("Sorry, this workshop is full."))
+        return redirect("events_list")
 
     form = RegistrationForm(request.POST)
     if not form.is_valid():
-        messages.error(request, _('Please check your name and email.'))
-        return redirect('events_list')
+        messages.error(request, _("Please check your name and email."))
+        return redirect("events_list")
 
     registration = form.save(commit=False)
     registration.event = event
     try:
         registration.save()
     except IntegrityError:
-        messages.info(request, _('You\'re already registered for this event.'))
-        return redirect('events_list')
+        messages.info(request, _("You're already registered for this event."))
+        return redirect("events_list")
 
     if send_registration_confirm(registration):
         messages.success(
             request,
-            _('You\'re in! Check your email for confirmation.'),
+            _("You're in! Check your email for confirmation."),
         )
     else:
         messages.warning(
             request,
-            _('You\'re registered, but we couldn\'t send the confirmation email. We\'ll see you there!'),
+            _(
+                "You're registered, but we couldn't send the confirmation email. We'll see you there!"
+            ),
         )
-    return redirect('events_list')
+    return redirect("events_list")
 
 
 @require_POST
@@ -127,42 +137,42 @@ def jam_notify(request, event_id):
 
     if form.is_valid():
         _subscriber, created = Subscriber.objects.get_or_create(
-            email=form.cleaned_data['email'],
-            defaults={'city_interest': event.city},
+            email=form.cleaned_data["email"],
+            defaults={"city_interest": event.city},
         )
         if created:
-            messages.success(request, _('We\'ll notify you of any changes.'))
+            messages.success(request, _("We'll notify you of any changes."))
         else:
-            messages.info(request, _('You\'re already on our list — we\'ll keep you posted!'))
+            messages.info(request, _("You're already on our list — we'll keep you posted!"))
 
-    return redirect('events_list')
+    return redirect("events_list")
 
 
 def polls_list(request):
     active_polls = Poll.objects.filter(is_active=True, succeeded=False)
-    closed_polls = Poll.objects.filter(is_active=False).order_by('-created_at')
+    closed_polls = Poll.objects.filter(is_active=False).order_by("-created_at")
 
     propose_form = PollProposeForm()
     vote_form = VoteForm()
 
-    if request.method == 'POST':
-        if request.POST.get('form_type') == 'propose':
+    if request.method == "POST":
+        if request.POST.get("form_type") == "propose":
             propose_form = PollProposeForm(request.POST)
             if propose_form.is_valid():
                 poll = propose_form.save()
                 if send_poll_propose_confirm(poll):
                     messages.success(
                         request,
-                        _('Your proposal is live! Share it to gather votes.'),
+                        _("Your proposal is live! Share it to gather votes."),
                     )
                 else:
                     messages.warning(
                         request,
-                        _('Your proposal is live, but we couldn\'t send a confirmation email.'),
+                        _("Your proposal is live, but we couldn't send a confirmation email."),
                     )
-                return redirect('polls_list')
-        elif request.POST.get('form_type') == 'vote':
-            poll_id = request.POST.get('poll_id')
+                return redirect("polls_list")
+        elif request.POST.get("form_type") == "vote":
+            poll_id = request.POST.get("poll_id")
             poll = get_object_or_404(Poll, pk=poll_id, is_active=True, succeeded=False)
             vote_form = VoteForm(request.POST)
             if vote_form.is_valid():
@@ -171,19 +181,31 @@ def polls_list(request):
                 try:
                     vote.save()
                     poll.vote_count += 1
-                    poll.save(update_fields=['vote_count'])
+                    poll.save(update_fields=["vote_count"])
                     check_poll_after_vote(poll)
                     if send_poll_vote_confirm(vote):
-                        messages.success(request, _('Vote recorded! Thanks for supporting %(city)s.') % {'city': poll.city})
+                        messages.success(
+                            request,
+                            _("Vote recorded! Thanks for supporting %(city)s.")
+                            % {"city": poll.city},
+                        )
                     else:
-                        messages.success(request, _('Vote recorded for %(city)s! (Confirmation email could not be sent.)') % {'city': poll.city})
+                        messages.success(
+                            request,
+                            _("Vote recorded for %(city)s! (Confirmation email could not be sent.)")
+                            % {"city": poll.city},
+                        )
                 except IntegrityError:
-                    messages.info(request, _('You\'ve already voted for this city.'))
-                return redirect('polls_list')
+                    messages.info(request, _("You've already voted for this city."))
+                return redirect("polls_list")
 
-    return render(request, 'polls.html', {
-        'active_polls': active_polls,
-        'closed_polls': closed_polls,
-        'propose_form': propose_form,
-        'vote_form': vote_form,
-    })
+    return render(
+        request,
+        "polls.html",
+        {
+            "active_polls": active_polls,
+            "closed_polls": closed_polls,
+            "propose_form": propose_form,
+            "vote_form": vote_form,
+        },
+    )

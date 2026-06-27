@@ -10,9 +10,9 @@ from ..base import UnitTestCase
 
 class EventModelTests(UnitTestCase):
     def test_str_includes_title_city_and_date(self):
-        event = self.make_workshop(title='Scene Lab', city='Gdańsk', date=self.future_date(7))
+        event = self.make_workshop(title="Scene Lab", city="Gdańsk", date=self.future_date(7))
 
-        self.assertEqual(str(event), f'Scene Lab — Gdańsk ({event.date})')
+        self.assertEqual(str(event), f"Scene Lab — Gdańsk ({event.date})")
 
     def test_is_workshop_and_is_jam(self):
         workshop = self.make_workshop()
@@ -25,15 +25,15 @@ class EventModelTests(UnitTestCase):
 
     def test_registration_count_and_spots_remaining(self):
         event = self.make_workshop(capacity=3)
-        Registration.objects.create(event=event, name='One', email='one@example.com')
-        Registration.objects.create(event=event, name='Two', email='two@example.com')
+        Registration.objects.create(event=event, name="One", email="one@example.com")
+        Registration.objects.create(event=event, name="Two", email="two@example.com")
 
         self.assertEqual(event.registration_count, 2)
         self.assertEqual(event.spots_remaining, 1)
 
     def test_is_full_only_applies_to_workshops(self):
         workshop = self.make_workshop(capacity=1)
-        Registration.objects.create(event=workshop, name='Full', email='full@example.com')
+        Registration.objects.create(event=workshop, name="Full", email="full@example.com")
         jam = self.make_jam(capacity=1)
 
         self.assertTrue(workshop.is_full)
@@ -41,8 +41,8 @@ class EventModelTests(UnitTestCase):
 
     def test_spots_remaining_never_goes_negative(self):
         event = self.make_workshop(capacity=1)
-        Registration.objects.create(event=event, name='One', email='one@example.com')
-        Registration.objects.create(event=event, name='Two', email='two@example.com')
+        Registration.objects.create(event=event, name="One", email="one@example.com")
+        Registration.objects.create(event=event, name="Two", email="two@example.com")
 
         self.assertEqual(event.spots_remaining, 0)
 
@@ -51,9 +51,9 @@ class PollModelTests(UnitTestCase):
     @override_settings(POLL_DEADLINE_DAYS=30)
     def test_save_sets_deadline_when_missing(self):
         poll = Poll(
-            city='Lublin',
-            description='Weekly improv.',
-            proposed_by_email='lead@example.com',
+            city="Lublin",
+            description="Weekly improv.",
+            proposed_by_email="lead@example.com",
         )
         poll.save()
 
@@ -97,15 +97,15 @@ class PollModelTests(UnitTestCase):
     @override_settings(POLL_VOTE_THRESHOLD=5)
     def test_has_reached_threshold(self):
         below = self.make_poll(vote_count=4)
-        at = self.make_poll(city='Katowice', vote_count=5)
+        at = self.make_poll(city="Katowice", vote_count=5)
 
         self.assertFalse(below.has_reached_threshold)
         self.assertTrue(at.has_reached_threshold)
 
     def test_reconcile_vote_count_syncs_drift(self):
         poll = self.make_poll(vote_count=5)
-        Vote.objects.create(poll=poll, email='one@example.com')
-        Vote.objects.create(poll=poll, email='two@example.com')
+        Vote.objects.create(poll=poll, email="one@example.com")
+        Vote.objects.create(poll=poll, email="two@example.com")
 
         actual = poll.reconcile_vote_count()
 
@@ -114,45 +114,45 @@ class PollModelTests(UnitTestCase):
         self.assertEqual(poll.vote_count, 2)
 
     def test_str_includes_city_type_and_votes(self):
-        poll = self.make_poll(city='Toruń', event_type=Poll.JAM, vote_count=7)
+        poll = self.make_poll(city="Toruń", event_type=Poll.JAM, vote_count=7)
 
-        self.assertEqual(str(poll), 'Toruń (jam) — 7 votes')
+        self.assertEqual(str(poll), "Toruń (jam) — 7 votes")
 
 
 class RegistrationModelTests(UnitTestCase):
     def test_str_includes_name_email_and_event(self):
-        event = self.make_workshop(title='Night Scenes')
+        event = self.make_workshop(title="Night Scenes")
         registration = Registration.objects.create(
             event=event,
-            name='Pat Lee',
-            email='pat@example.com',
+            name="Pat Lee",
+            email="pat@example.com",
         )
 
-        self.assertEqual(str(registration), f'Pat Lee <pat@example.com> — {event}')
+        self.assertEqual(str(registration), f"Pat Lee <pat@example.com> — {event}")
 
 
 class SubscriberModelTests(UnitTestCase):
     def test_str_returns_email(self):
-        subscriber = Subscriber.objects.create(email='fan@example.com')
+        subscriber = Subscriber.objects.create(email="fan@example.com")
 
-        self.assertEqual(str(subscriber), 'fan@example.com')
+        self.assertEqual(str(subscriber), "fan@example.com")
 
 
 class VoteModelTests(UnitTestCase):
     def test_str_includes_email_and_poll_city(self):
-        poll = self.make_poll(city='Szczecin')
-        vote = Vote.objects.create(poll=poll, email='voter@example.com')
+        poll = self.make_poll(city="Szczecin")
+        vote = Vote.objects.create(poll=poll, email="voter@example.com")
 
-        self.assertEqual(str(vote), 'voter@example.com — Szczecin')
+        self.assertEqual(str(vote), "voter@example.com — Szczecin")
 
 
 class EventDefaultsTests(UnitTestCase):
     def test_workshop_defaults(self):
         event = Event.objects.create(
-            title='Defaults Workshop',
-            city='Warsaw',
+            title="Defaults Workshop",
+            city="Warsaw",
             date=self.future_date(),
-            description='Test defaults.',
+            description="Test defaults.",
         )
 
         self.assertEqual(event.event_type, Event.WORKSHOP)

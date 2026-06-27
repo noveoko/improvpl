@@ -50,6 +50,20 @@ python manage.py close_polls
 python manage.py close_polls --dry-run
 ```
 
+### Quality checks (run before pushing)
+
+```bash
+pip install -r requirements-dev.txt
+pre-commit install          # optional: auto-run on every commit
+
+ruff check .
+ruff format --check .
+mypy core improvpl manage.py
+bandit -r core improvpl -ll
+pip-audit -r requirements.txt
+python manage.py test core.tests -v 2
+```
+
 ### Polish translations
 
 ```bash
@@ -101,7 +115,8 @@ Browser ──HTTPS──► Cloudflare (edge SSL) ──HTTP──► Nginx ─
 | App user | `improvuser` → `/home/improvuser/improvpl` |
 | Repo | `git@github.com:noveoko/improvpl.git` |
 | DNS / SSL | Cloudflare (proxied A records, Universal SSL) |
-| Deploy | Push to `main` → GitHub Actions, or `bash deploy/deploy.sh` on server |
+| Deploy | `staging` branch → staging; `main` → production (via GitHub Actions) |
+| Staging | https://staging.improv.pl (same droplet, separate app dir + DB) |
 
 ### Server `.env` (not in git)
 
@@ -153,6 +168,30 @@ echo 'improvuser ALL=(ALL) NOPASSWD: /bin/systemctl restart gunicorn' | sudo tee
 
 ### CI/CD (GitHub Actions)
 
+Workflow: `.github/workflows/deploy.yml`
+
+**Branches**
+
+| Branch | CI gates | Deploy target |
+|--------|----------|---------------|
+| PR → `main` / `staging` | All checks | None |
+| `staging` | All checks | https://staging.improv.pl |
+| `main` | All checks | https://improv.pl |
+
+**Recommended flow:** develop locally → push to `staging` → verify on staging → merge `staging` → `main`.
+
+**CI gates (all must pass before deploy)**
+
+| Gate | Tool |
+|------|------|
+| Lint | Ruff (`check` + `format --check`) |
+| Type check | Mypy + django-stubs |
+| Security | Bandit (code) + pip-audit (dependencies) |
+| Unit / integration / acceptance | `python manage.py test core.tests` |
+| E2E smoke | Playwright |
+
+**Pre-commit hooks** (optional locally): `pre-commit install` — runs Ruff, Mypy, and Bandit on each commit.
+
 Repo secrets (`Settings → Secrets → Actions`):
 
 | Secret | Value |
@@ -163,11 +202,23 @@ Repo secrets (`Settings → Secrets → Actions`):
 
 Server needs a GitHub deploy key (`~/.ssh/github_deploy`) with read access to the repo.
 
-Every push to `main` runs `.github/workflows/deploy.yml`. Manual deploy:
+Manual deploy (bypasses CI):
 
 ```bash
-bash ~/improvpl/deploy/deploy.sh
+bash ~/improvpl-staging/deploy/staging-deploy.sh   # staging
+bash ~/improvpl/deploy/deploy.sh                   # production
 ```
+
+### One-time staging setup
+
+On the droplet as `improvuser`:
+
+```bash
+bash deploy/setup-staging.sh
+# Then follow the printed root steps (gunicorn-staging, nginx, sudoers, Cloudflare DNS)
+```
+
+Create `staging` branch in GitHub if it does not exist yet. Staging uses a separate PostgreSQL database and `.env` in `/home/improvuser/improvpl-staging/`.
 
 ### Cron — close polls daily
 

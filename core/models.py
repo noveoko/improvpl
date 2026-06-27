@@ -11,27 +11,27 @@ class Subscriber(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.email
 
 
 class Event(models.Model):
-    WORKSHOP = 'workshop'
-    JAM = 'jam'
+    WORKSHOP = "workshop"
+    JAM = "jam"
     EVENT_TYPE_CHOICES = [
-        (WORKSHOP, 'Workshop'),
-        (JAM, 'Jam'),
+        (WORKSHOP, "Workshop"),
+        (JAM, "Jam"),
     ]
 
-    BEGINNER = 'beginner'
-    INTERMEDIATE = 'intermediate'
-    ALL_LEVELS = 'all_levels'
+    BEGINNER = "beginner"
+    INTERMEDIATE = "intermediate"
+    ALL_LEVELS = "all_levels"
     SKILL_LEVEL_CHOICES = [
-        (BEGINNER, 'Beginner'),
-        (INTERMEDIATE, 'Intermediate'),
-        (ALL_LEVELS, 'All levels'),
+        (BEGINNER, "Beginner"),
+        (INTERMEDIATE, "Intermediate"),
+        (ALL_LEVELS, "All levels"),
     ]
 
     title = models.CharField(max_length=200)
@@ -44,24 +44,24 @@ class Event(models.Model):
     capacity = models.PositiveIntegerField(default=20)
     description = models.TextField()
     headline_image = models.ImageField(
-        upload_to='events/headlines/',
+        upload_to="events/headlines/",
         blank=True,
-        help_text='Optional promotional banner (recommended 16:9).',
+        help_text="Optional promotional banner (recommended 16:9).",
     )
     description_image = models.ImageField(
-        upload_to='events/descriptions/',
+        upload_to="events/descriptions/",
         blank=True,
-        help_text='Optional photo shown with the event description.',
+        help_text="Optional photo shown with the event description.",
     )
     instructor = models.CharField(max_length=100, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['date', 'start_time']
+        ordering = ["date", "start_time"]
 
     def __str__(self):
-        return f'{self.title} — {self.city} ({self.date})'
+        return f"{self.title} — {self.city} ({self.date})"
 
     @property
     def is_workshop(self):
@@ -85,25 +85,25 @@ class Event(models.Model):
 
 
 class Registration(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='registrations')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="registrations")
     name = models.CharField(max_length=100)
     email = models.EmailField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
-        unique_together = [['event', 'email']]
+        ordering = ["-created_at"]
+        unique_together = [["event", "email"]]
 
     def __str__(self):
-        return f'{self.name} <{self.email}> — {self.event}'
+        return f"{self.name} <{self.email}> — {self.event}"
 
 
 class Poll(models.Model):
-    WORKSHOP = 'workshop'
-    JAM = 'jam'
+    WORKSHOP = "workshop"
+    JAM = "jam"
     EVENT_TYPE_CHOICES = [
-        (WORKSHOP, 'Workshop'),
-        (JAM, 'Jam'),
+        (WORKSHOP, "Workshop"),
+        (JAM, "Jam"),
     ]
 
     city = models.CharField(max_length=100)
@@ -117,20 +117,20 @@ class Poll(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-vote_count', '-created_at']
+        ordering = ["-vote_count", "-created_at"]
 
     def __str__(self):
-        return f'{self.city} ({self.event_type}) — {self.vote_count} votes'
+        return f"{self.city} ({self.event_type}) — {self.vote_count} votes"
 
     def save(self, *args, **kwargs):
         if not self.deadline:
-            days = getattr(settings, 'POLL_DEADLINE_DAYS', 365)
+            days = getattr(settings, "POLL_DEADLINE_DAYS", 365)
             self.deadline = (timezone.now() + timedelta(days=days)).date()
         super().save(*args, **kwargs)
 
     @property
     def threshold(self):
-        return getattr(settings, 'POLL_VOTE_THRESHOLD', 100)
+        return getattr(settings, "POLL_VOTE_THRESHOLD", 100)
 
     @property
     def progress_percent(self):
@@ -149,33 +149,33 @@ class Poll(models.Model):
         actual = self.votes.count()
         if self.vote_count != actual:
             self.vote_count = actual
-            self.save(update_fields=['vote_count'])
+            self.save(update_fields=["vote_count"])
         return actual
 
 
 class Vote(models.Model):
-    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='votes')
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="votes")
     email = models.EmailField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
-        unique_together = [['poll', 'email']]
+        ordering = ["-created_at"]
+        unique_together = [["poll", "email"]]
 
     def __str__(self):
-        return f'{self.email} — {self.poll.city}'
+        return f"{self.email} — {self.poll.city}"
 
 
 class HomePageContent(models.Model):
     hero_image = models.ImageField(
-        upload_to='homepage/',
+        upload_to="homepage/",
         blank=True,
-        help_text='Optional full-width image above the homepage headline.',
+        help_text="Optional full-width image above the homepage headline.",
     )
 
     class Meta:
-        verbose_name = 'Home page content'
-        verbose_name_plural = 'Home page content'
+        verbose_name = "Home page content"
+        verbose_name_plural = "Home page content"
 
     def save(self, *args, **kwargs):
         self.pk = 1
@@ -187,4 +187,4 @@ class HomePageContent(models.Model):
         return obj
 
     def __str__(self):
-        return 'Home page content'
+        return "Home page content"

@@ -4,31 +4,50 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='HomePageContent',
+            name="HomePageContent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hero_image', models.ImageField(blank=True, help_text='Optional full-width image above the homepage headline.', upload_to='homepage/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "hero_image",
+                    models.ImageField(
+                        blank=True,
+                        help_text="Optional full-width image above the homepage headline.",
+                        upload_to="homepage/",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Home page content',
-                'verbose_name_plural': 'Home page content',
+                "verbose_name": "Home page content",
+                "verbose_name_plural": "Home page content",
             },
         ),
         migrations.AddField(
-            model_name='event',
-            name='description_image',
-            field=models.ImageField(blank=True, help_text='Optional photo shown with the event description.', upload_to='events/descriptions/'),
+            model_name="event",
+            name="description_image",
+            field=models.ImageField(
+                blank=True,
+                help_text="Optional photo shown with the event description.",
+                upload_to="events/descriptions/",
+            ),
         ),
         migrations.AddField(
-            model_name='event',
-            name='headline_image',
-            field=models.ImageField(blank=True, help_text='Optional promotional banner (recommended 16:9).', upload_to='events/headlines/'),
+            model_name="event",
+            name="headline_image",
+            field=models.ImageField(
+                blank=True,
+                help_text="Optional promotional banner (recommended 16:9).",
+                upload_to="events/headlines/",
+            ),
         ),
     ]

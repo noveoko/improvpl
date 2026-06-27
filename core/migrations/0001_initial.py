@@ -5,89 +5,151 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Event',
+            name="Event",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200)),
-                ('city', models.CharField(max_length=100)),
-                ('venue', models.CharField(blank=True, max_length=200)),
-                ('date', models.DateField()),
-                ('start_time', models.TimeField(blank=True, null=True)),
-                ('event_type', models.CharField(choices=[('workshop', 'Workshop'), ('jam', 'Jam')], default='workshop', max_length=20)),
-                ('skill_level', models.CharField(choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('all_levels', 'All levels')], default='all_levels', max_length=20)),
-                ('capacity', models.PositiveIntegerField(default=20)),
-                ('description', models.TextField()),
-                ('instructor', models.CharField(blank=True, max_length=100)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("title", models.CharField(max_length=200)),
+                ("city", models.CharField(max_length=100)),
+                ("venue", models.CharField(blank=True, max_length=200)),
+                ("date", models.DateField()),
+                ("start_time", models.TimeField(blank=True, null=True)),
+                (
+                    "event_type",
+                    models.CharField(
+                        choices=[("workshop", "Workshop"), ("jam", "Jam")],
+                        default="workshop",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "skill_level",
+                    models.CharField(
+                        choices=[
+                            ("beginner", "Beginner"),
+                            ("intermediate", "Intermediate"),
+                            ("all_levels", "All levels"),
+                        ],
+                        default="all_levels",
+                        max_length=20,
+                    ),
+                ),
+                ("capacity", models.PositiveIntegerField(default=20)),
+                ("description", models.TextField()),
+                ("instructor", models.CharField(blank=True, max_length=100)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['date', 'start_time'],
+                "ordering": ["date", "start_time"],
             },
         ),
         migrations.CreateModel(
-            name='Poll',
+            name="Poll",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('city', models.CharField(max_length=100)),
-                ('event_type', models.CharField(choices=[('workshop', 'Workshop'), ('jam', 'Jam')], default='workshop', max_length=20)),
-                ('description', models.TextField()),
-                ('proposed_by_email', models.EmailField(max_length=254)),
-                ('deadline', models.DateField(blank=True)),
-                ('vote_count', models.PositiveIntegerField(default=0)),
-                ('is_active', models.BooleanField(default=True)),
-                ('succeeded', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("city", models.CharField(max_length=100)),
+                (
+                    "event_type",
+                    models.CharField(
+                        choices=[("workshop", "Workshop"), ("jam", "Jam")],
+                        default="workshop",
+                        max_length=20,
+                    ),
+                ),
+                ("description", models.TextField()),
+                ("proposed_by_email", models.EmailField(max_length=254)),
+                ("deadline", models.DateField(blank=True)),
+                ("vote_count", models.PositiveIntegerField(default=0)),
+                ("is_active", models.BooleanField(default=True)),
+                ("succeeded", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['-vote_count', '-created_at'],
+                "ordering": ["-vote_count", "-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Subscriber',
+            name="Subscriber",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('email', models.EmailField(max_length=254, unique=True)),
-                ('city_interest', models.CharField(blank=True, max_length=100)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("email", models.EmailField(max_length=254, unique=True)),
+                ("city_interest", models.CharField(blank=True, max_length=100)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Registration',
+            name="Registration",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('email', models.EmailField(max_length=254)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='registrations', to='core.event')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("email", models.EmailField(max_length=254)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "event",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="registrations",
+                        to="core.event",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
-                'unique_together': {('event', 'email')},
+                "ordering": ["-created_at"],
+                "unique_together": {("event", "email")},
             },
         ),
         migrations.CreateModel(
-            name='Vote',
+            name="Vote",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('email', models.EmailField(max_length=254)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('poll', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='votes', to='core.poll')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("email", models.EmailField(max_length=254)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "poll",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="votes",
+                        to="core.poll",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
-                'unique_together': {('poll', 'email')},
+                "ordering": ["-created_at"],
+                "unique_together": {("poll", "email")},
             },
         ),
     ]

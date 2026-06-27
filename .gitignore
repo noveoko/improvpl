@@ -13,3 +13,5 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+.mypy_cache/
+.ruff_cache/

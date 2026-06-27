@@ -1,12 +1,12 @@
-from datetime import timedelta
 import html
+from datetime import timedelta
 
 from django.test import Client, TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 
 from core.models import Event, Poll
 
-EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 
 class FactoryMixin:
@@ -20,38 +20,38 @@ class FactoryMixin:
 
     def make_workshop(self, **kwargs):
         defaults = {
-            'title': 'Test Workshop',
-            'city': 'Warsaw',
-            'date': self.future_date(),
-            'description': 'A beginner-friendly English improv workshop.',
-            'event_type': Event.WORKSHOP,
-            'capacity': 20,
-            'is_active': True,
+            "title": "Test Workshop",
+            "city": "Warsaw",
+            "date": self.future_date(),
+            "description": "A beginner-friendly English improv workshop.",
+            "event_type": Event.WORKSHOP,
+            "capacity": 20,
+            "is_active": True,
         }
         defaults.update(kwargs)
         return Event.objects.create(**defaults)
 
     def make_jam(self, **kwargs):
         defaults = {
-            'title': 'Friday Night Jam',
-            'city': 'Kraków',
-            'date': self.future_date(21),
-            'description': 'Drop-in English improv jam.',
-            'event_type': Event.JAM,
-            'capacity': 30,
-            'is_active': True,
+            "title": "Friday Night Jam",
+            "city": "Kraków",
+            "date": self.future_date(21),
+            "description": "Drop-in English improv jam.",
+            "event_type": Event.JAM,
+            "capacity": 30,
+            "is_active": True,
         }
         defaults.update(kwargs)
         return Event.objects.create(**defaults)
 
     def make_poll(self, **kwargs):
         defaults = {
-            'city': 'Poznań',
-            'event_type': Poll.WORKSHOP,
-            'description': 'Bring improv to Poznań.',
-            'proposed_by_email': 'proposer@example.com',
-            'is_active': True,
-            'succeeded': False,
+            "city": "Poznań",
+            "event_type": Poll.WORKSHOP,
+            "description": "Bring improv to Poznań.",
+            "proposed_by_email": "proposer@example.com",
+            "is_active": True,
+            "succeeded": False,
         }
         defaults.update(kwargs)
         return Poll.objects.create(**defaults)
@@ -69,10 +69,12 @@ class AcceptanceMixin(FactoryMixin, ResponseMixin):
     def setUp(self):
         self.client = Client(enforce_csrf_checks=False)
 
-    def register_for_event(self, event, name='Alex Test', email='alex@example.com', *, follow=False):
+    def register_for_event(
+        self, event, name="Alex Test", email="alex@example.com", *, follow=False
+    ):
         return self.client.post(
-            f'/events/{event.pk}/register/',
-            {'name': name, 'email': email},
+            f"/events/{event.pk}/register/",
+            {"name": name, "email": email},
             follow=follow,
         )
 

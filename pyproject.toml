@@ -1,0 +1,43 @@
+[project]
+name = "improvpl"
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["core", "improvpl", "manage.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"core/migrations/*" = ["E501"]
+"core/tests/*" = ["B017"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "environ.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "core.tests.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "core.management.commands.*"
+disallow_untyped_defs = false
+
+[tool.django-stubs]
+django_settings_module = "improvpl.settings"
+
+[tool.bandit]
+exclude_dirs = ["core/tests", "venv", "node_modules"]
+skips = ["B101"]

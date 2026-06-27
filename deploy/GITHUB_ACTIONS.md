@@ -26,7 +26,9 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 
 ## 4. Verify
 
-Push to `main` or run **Actions → Deploy to production → Run workflow**.
+Push to `staging` (deploys staging) or `main` (deploys production), or run **Actions → CI/CD → Run workflow** with a deploy target.
+
+All pushes and PRs run lint, type check, security scan, Django tests, and Playwright before any deploy.
 
 Check server:
 

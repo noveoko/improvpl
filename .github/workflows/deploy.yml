@@ -1,16 +1,83 @@
-name: Deploy to production
+name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
   workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: Deploy environment (checks always run)
+        required: false
+        default: none
+        type: choice
+        options:
+          - none
+          - staging
+          - production
 
 concurrency:
-  group: production
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Mypy
+        run: mypy core improvpl manage.py
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Bandit security scan
+        run: bandit -r core improvpl -ll
+
+      - name: Dependency vulnerability scan
+        run: pip-audit -r requirements.txt
+
   django-tests:
+    needs: [lint, typecheck, security]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,11 +143,39 @@ jobs:
       - name: Run Playwright smoke tests
         run: npx playwright test
 
-  deploy:
-    needs: [django-tests, e2e-tests]
+  deploy-staging:
+    needs: [lint, typecheck, security, django-tests, e2e-tests]
+    if: >
+      github.event_name == 'push' && github.ref == 'refs/heads/staging' ||
+      github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_target == 'staging'
     runs-on: ubuntu-latest
+    environment: staging
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: true
     steps:
-      - name: Deploy over SSH
+      - name: Deploy staging over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            bash /home/improvuser/improvpl-staging/deploy/staging-deploy.sh
+
+  deploy-production:
+    needs: [lint, typecheck, security, django-tests, e2e-tests]
+    if: >
+      github.event_name == 'push' && github.ref == 'refs/heads/main' ||
+      github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_target == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: true
+    steps:
+      - name: Deploy production over SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
